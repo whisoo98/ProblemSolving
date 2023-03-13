@@ -15,135 +15,82 @@
 #include <ctime>
 #include <climits>
 #include <tuple>
-#define N 55
-#define int long long
+#define N 105
+#define ll long long
 #define endl "\n"
 #define MID(a,b) (a+b)/2
-#define INF 987654321
+#define INF INT_MIN
+
 using namespace std;
 
-
-int edge[N][N];
-vector <tuple <int,int, int >> edges;
-vector <int> NegEdge;
-bool isNeg[N];
-int vertex[N];
-int dist[N];
-void BellmanFord(int st, int ed, int n, int m) {
-	dist[st] = vertex[st];
-	int sz = edges.size();
-	for (int i = 0; i <n; i++) {
-		for (int j = 0; j < sz; j++) {
-			int from = get<0>(edges[j]);
-			int to = get<1>(edges[j]);
-			int cost = get<2>(edges[j]);
-			if (dist[from] == INF) continue;
-			if (dist[to] > dist[from] + cost) {
-				dist[to] = dist[from] + cost;
-			}
+vector<tuple<ll,ll, ll>> edge;
+vector<ll> con[N];
+ll visit[N];
+ll arr[N];
+int n, st, ed, m;
+int chk = 0;
+ll temp[N];
+void dfs(ll x) {
+	temp[x] = 1;
+	if (x == ed) chk = 1;
+	for (auto it : con[x]) {
+		if (temp[it] != 1) {
+			dfs(it);
 		}
 	}
+	temp[x] = 0;
 }
 
-int isNegativeCycle(int st, int ed, int n, int m) {
-	int chk = 0;
-	int sz = edges.size();
-
-	for (int j = 0; j < sz; j++) {
-		int from = get<0>(edges[j]);
-		int to = get<1>(edges[j]);
-		int cost = get<2>(edges[j]);
-		if (dist[from] == INF) continue;
-		if (dist[to] > dist[from] + cost) {
-			dist[to] = dist[from] + cost;
-			chk = 1;
-			if (!isNeg[to]) {
-				NegEdge.push_back(to);
-				isNeg[to] = true;
-			}
-			if (!isNeg[from]) {
-				NegEdge.push_back(from);
-				isNeg[from] = true;
-			}
-			
-		}
-	}
-	return chk;
-}
-bool visit[N];
-void dfs(int now,int n) {
-	visit[now] = true;
-	//int st = NegEdge[0];
-	for (int i = 0; i < n; i++) {
-		if (edge[now][i] == INF) continue;
-		if (visit[i] == false) {
-			dfs(i, n);
-		}
-	}
-
-}
-
-void Solution(int st, int ed, int n, int m) {
-	BellmanFord(st, ed, n, m);
-	int NegCycle = isNegativeCycle(st, ed, n, m);
-	if (dist[ed] == INF) {
-		cout << "gg" << endl;
-	}
-	else {
-		if (NegCycle) {
-			int sz = NegEdge.size();
-			for (int i = 0; i < sz;i++) {
-				dfs(NegEdge[i], n);
-			}
-			if(visit[ed])
-				cout << "Gee" << endl;
-			else
-				cout << -dist[ed] << endl;
-		}
-		else {
-			cout << -dist[ed] << endl;
-		}
-	}
-}
-
-signed main()
+int main()
 {
 	ios_base::sync_with_stdio(false);
 	cin.tie(NULL);
 	cout.tie(NULL);
 
 	int i, j; //for문 변수 -> longlong필요한지 확인
-	int n; cin >> n;
-	int st, ed; cin >> st >> ed;
-	int m; cin >> m;
-	for (int i = 0; i < n; i++) {
-		for (int j = 0; j < n; j++) {
-			edge[i][j] = INF;
-		}
-		dist[i] = INF;
+	 cin >> n >> st >> ed >> m;
+	st++; ed++;
+	for (i = 1; i <= n; i++) {
+		visit[i] = INF;
 	}
-
-	for (int i = 0; i < m; i++) {
-		int a, b, c; cin >> a >> b >> c;
-		/*if (edge[a][b] == INF) edge[a][b] = c;
-		else edge[a][b] = min(edge[a][b], c);*/
-		edge[a][b] = min(edge[a][b], c);
+	for (i = 1; i <= m; i++) {
+		ll a, b, c; cin >> a >> b >> c;
+		a++; b++;
+		edge.push_back({ a,b,c });
+		con[a].push_back(b);
+		//edge[a].push_back({ c,b });
 	}
-
-	for (int i = 0; i < n; i++) {
-		cin >> vertex[i];
-		vertex[i] *= -1;
+	for (i = 1; i <= n; i++) {
+		cin >> arr[i];
 	}
-
-	for (int i = 0; i < n; i++) {
-		for (int j = 0; j < n; j++) {
-			if(edge[i][j] == INF) continue;
-			else {
-				edge[i][j] += vertex[j];
-				edges.push_back({ i,j,edge[i][j] });
+	//visit[st] = 0;
+	visit[st] = arr[st];
+	for (i = 1; i <= n; i++) {
+		for (j = 0; j < m; j++) {
+			ll start = get<0>(edge[j]);
+			ll end = get<1>(edge[j]);
+			ll cost = get<2>(edge[j]);//-될값
+			if (visit[start] == INF) continue;
+			else if (visit[end] < visit[start] - cost + arr[end]) {
+				visit[end] = visit[start] - cost + arr[end];
 			}
 		}
 	}
-	Solution(st, ed, n, m);
+	for (j = 0; j < m; j++) {
+		if (chk == 1) break;
+		ll start = get<0>(edge[j]);
+		ll end = get<1>(edge[j]);
+		ll cost = get<2>(edge[j]);//-될값
+		if (visit[start] == INF) continue;
+		else if (visit[end] < visit[start] - cost + arr[end]) {
+			visit[end] = visit[start] - cost + arr[end];
+			dfs(start);
+			//if (end == ed)	chk++;
+
+		}
+	}
+	if (visit[ed] == INF) cout << "gg";
+	else if (chk == 1) cout << "Gee";
+	else cout << visit[ed];
 	return 0;
 }

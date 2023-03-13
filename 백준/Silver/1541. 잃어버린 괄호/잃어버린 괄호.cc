@@ -1,33 +1,67 @@
+#include <stdio.h>
 #include <iostream>
-#include <cstring>
-#include <sstream>
+#include <vector>
+#include <set>
+#include <algorithm>
+#include <functional>
+#include <stdlib.h>
+#include <string>
+#include <queue>
+#include <stack>
+#include <map>
+#include<sstream>
+
 using namespace std;
 
+/*struct type_name {
 
+}srt;*/
 
-void Solution(string s){
-	stringstream ss; ss<<s;
-	int arr[55];
-	int sum[55];
-	for(int i=0;i<55;i++) sum[i]=0;
-	int t =0;
-	char cmd[55];
-	int n = 0;
-	while(ss.good()){
-		ss>>arr[n]>>cmd[n];
-		sum[t]+=arr[n];
-		if(cmd[n]=='-') t++;
-		n++;
+//vector <type> vec;
+//stack <type> stk;
+//queue <type> q;
+//string str;
+//map <key_type,value_type> m;
+int arr_minus[55];
+int arr_plus[55];
+int main()
+{
+	ios_base::sync_with_stdio(false);
+	cin.tie(NULL);
+	cout.tie(NULL);
+	int i, j;//for문변수-->가끔식 long으로
+	string minus = "-";
+	//char plus = '+';
+	string str;
+	cin >> str;
+	stringstream ss;
+	ss << str;
+	int num;
+	int sum = 0;
+	if (str[0] == minus[0]) {
+		char giho;
+		ss >> giho;
+		while (ss.good()) {
+			ss >> num >> giho;
+			sum -= num;
+		}
 	}
-	int SUM=sum[0];
-	for(int i=1;i<=t;i++){
-		SUM-=sum[i];
+	else {
+		int swt = 1;
+		char giho;
+		int temp;
+		ss >> temp;
+		//cout << ss.good();
+		sum += temp;
+		
+		while (ss.good()) {
+			ss >> giho >> num;
+			//cout << num<<endl;
+			if (giho == minus[0]) swt = -1;
+			//cout << ss.good() << endl;
+			sum = sum + swt * num;
+		}
 	}
-	cout<<SUM<<"\n";
-}
-int main() {
-	// your code goes here
-	string s; getline(cin,s);
-	Solution(s);
+	cout << sum;
 	return 0;
 }

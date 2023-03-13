@@ -22,40 +22,10 @@
 #define INF 987654321
 using namespace std;
 
-vector<int> dist[N];
-int cnt[N];
-vector<pair<int, int>> edge[N];
 priority_queue<pair<int, int>> pq;
+priority_queue<int> heap[N];
+vector<pair<int, int>> edge[N];
 
-void dijkstra(int st, int n, int k) {
-	dist[st].push_back(0);
-	pq.push({ -0,st });
-	while (pq.size()) {
-		int now = pq.top().second;
-		int cost = -pq.top().first;
-		pq.pop();
-		if (cnt[now] == k) continue;
-		cnt[now]++;
-		for (auto it : edge[now]) {
-			int next = it.second;
-			//if (cnt[next]<k) {
-				dist[next].push_back(cost + it.first);
-				//dist[next] = cost + dist[it.first];
-				pq.push({ -(cost + it.first),next });
-			//}
-		}
-	}
-}
-
-
-void Solution(int st, int n,int k) {
-	dijkstra(st, n,k);
-	for (int i = st; i <= n; i++) {
-		sort(dist[i].begin(), dist[i].end());
-		if (cnt[i] >= k) cout << dist[i][k - 1] << endl;
-		else cout << -1 << endl;
-	}
-}
 
 int main()
 {
@@ -64,13 +34,39 @@ int main()
 	cout.tie(NULL);
 
 	int i, j; //for문 변수 -> longlong필요한지 확인
-	int n, m, k;
-	cin >> n >> m >> k;
-	for (int i = 0; i < m; i++) {
+	int n, m, k; cin >> n >> m >> k;
+	
+	for (i = 1; i <= m; i++) {
 		int a, b, c; cin >> a >> b >> c;
 		edge[a].push_back({ c,b });
 	}
 	int st = 1;
-	Solution(st, n,k);
+	pq.push({ -0,st });
+	heap[st].push(0);
+	while (!pq.empty()) {
+		int now = pq.top().second;
+		int cost = -pq.top().first;
+		pq.pop();
+		for (auto it : edge[now]) {
+			int next = it.second;
+			int nextCost = it.first;
+
+			if (heap[next].size() < k) {
+				pq.push({ -(cost + nextCost), next });
+				heap[next].push(cost + nextCost);
+			}
+			else if (heap[next].top()>cost+nextCost) {
+				heap[next].pop();
+				heap[next].push(cost + nextCost);
+				pq.push({ -(cost + nextCost), next });
+			}
+		}
+	}
+	for (i = 1; i <= n; i++) {
+		if (heap[i].size() < k) cout << -1 << endl;
+		else {
+			cout << heap[i].top() << endl;
+		}
+	}
 	return 0;
 }
