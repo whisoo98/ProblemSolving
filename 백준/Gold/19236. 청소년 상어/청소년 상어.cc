@@ -1,308 +1,176 @@
 #include <iostream>
 #include <algorithm>
-#include <functional>
-#include <cstdlib>
-#include <cstring>
-#include <cstdio>
-#include <cmath>
-#include <string>
-#include <queue>
-#include <stack>
-#include <map>
 #include <vector>
-#include <set>
-#include <sstream>
-#include <ctime>
-#include <climits>
-#include <tuple>
-#define N 5
-#define ll long long
-#define endl "\n"
-#define MID(a,b) (a+b)/2
 
 using namespace std;
 
-//int fish_number[N][N];
-//int fish_dir[N][N];
-vector<pair<int, int>> fish_pos(20);
-vector<vector<int>> fish_number(5);
-vector<vector<int>> fish_dir(5);
 
-pair<int, int> shark_pos;
-int dy[] = {0, -1, -1, 0, 1, 1, 1, 0, -1 };
-int dx[] = {0, 0, -1, -1, -1, 0, 1, 1, 1 };
-int ans;
+struct fish {
+	int num;
+	int y;
+	int x;
+	int dir;
 
-bool isOkFish(int ty, int tx) {
-	if (ty < 0 || ty >= 4 || tx < 0 || tx >= 4 ||
-		(ty == shark_pos.first && tx == shark_pos.second)) return false;
-	return true;
-}
-
-bool isOkShark(int ty, int tx) {
-	if (ty < 0 || ty >= 4 || tx < 0 || tx >= 4 ||
-		fish_number[ty][tx] == 0) return false;
-	return true;
-}
-void printFishInfo(int fish_dir) {
-	string direction;
-	switch (fish_dir) {
-	case 1:
-		direction = "상";
-		break;
-	case 2:
-		direction = "좌상";
-		break;
-	case 3:
-		direction = "좌";
-		break;
-	case 4:
-		direction = "좌하";
-		break;
-	case 5:
-		direction = "하";
-		break;
-	case 6:
-		direction = "우하";
-		break;
-	case 7:
-		direction = "우";
-		break;
-	case 8:
-		direction = "우상";
-		break;
-	default:
-		break;
+	void set_pos(int num, int y, int x, int dir) {
+		this->num = num;
+		this->y = y;
+		this->x = x;
+		this->dir = dir;
 	}
-	cout << "fish dir : " << direction << endl;
 
-}
-void printSharkInfo(int lv, int next_shark_dir, int next_shark_eating) {
-	string direction;
-	switch (next_shark_dir) {
-	case 1:
-		direction = "상";
-		break;
-	case 2:
-		direction = "좌상";
-		break;
-	case 3:
-		direction = "좌";
-		break;
-	case 4:
-		direction = "좌하";
-		break;
-	case 5:
-		direction = "하";
-		break;
-	case 6:
-		direction = "우하";
-		break;
-	case 7:
-		direction = "우";
-		break;
-	case 8:
-		direction = "우상";
-		break;
-	default:
-		break;
+	void rotate() {
+		dir = (dir + 1) % 8;
 	}
-	cout << "shark lv : " << lv << endl;
-	cout << "shark dir : " << direction << endl;
-	cout << "shark eat : " << next_shark_eating << endl;
+};
+
+int dy[8] = { -1, -1, 0, 1, 1, 1, 0, -1 };
+int dx[8] = { 0, -1, -1, -1, 0, 1, 1, 1 };
+
+int board[4][4];
+
+fish fishs[17];
+fish shark;
+
+
+bool is_in_range(int y, int x) {
+	if (y >= 0 && y < 4 && x >= 0 && x < 4 && !(y == shark.y && x == shark.x)) {
+		return true;
+	}
+	else {
+		return false;
+	}
 }
-void moveFish() {
+
+void swap_pos(fish& f1, fish& f2) {
+	fish temp_fish;
+	temp_fish.y = f1.y;
+	temp_fish.x = f1.x;
+	int f1_num = board[f1.y][f1.x];
+
+	board[f1.y][f1.x] = board[f2.y][f2.x];
+	f1.y = f2.y;
+	f1.x = f2.x;
+
+	board[f2.y][f2.x] = f1_num;
+	f2.y = temp_fish.y;
+	f2.x = temp_fish.x;
+}
+
+void move_fishs() {
+	int ny, nx;
+
 	for (int i = 1; i <= 16; i++) {
-		int fish_y = fish_pos[i].first;
-		int fish_x = fish_pos[i].second;
-		if (fish_y == -1 && fish_x == -1) {
-			continue;
-		}
-		/*cout << "-------------------------------------" << endl;
-		cout << i << "번째 물고기 swap 전 ";
-		printFishInfo(fish_dir[fish_y][fish_x]);
+		//아직 죽지 않았을 때
+		if (fishs[i].num != -1) {
+			for (int j = 0; j < 8; j++) {
+				ny = fishs[i].y + dy[fishs[i].dir];
+				nx = fishs[i].x + dx[fishs[i].dir];
 
-		for (int i = 0; i < 4; i++) {
-			for (int j = 0; j < 4; j++) {
-				if (i == shark_pos.first&& j == shark_pos.second) {
-					cout << -4 << " ";
-					continue;
+				if (is_in_range(ny, nx)) {
+					swap_pos(fishs[board[ny][nx]], fishs[board[fishs[i].y][fishs[i].x]]);
+					break;
 				}
-				cout << fish_number[i][j] << " ";
-			}
-			cout << endl;
-		}
-		cout << "-------------------------------------" << endl;*/
-		
+				else {
+					fishs[i].rotate();
+				}
 
-		int dir = fish_dir[fish_y][fish_x];
-		int ty, tx;
-
-		int chk = 0;
-		while (chk < 8) {
-			ty = fish_y + dy[dir];
-			tx = fish_x + dx[dir];
-			if (isOkFish(ty, tx)) {
-
-				int change_fish = fish_number[ty][tx];
-				int change_fish_y = ty;
-				int change_fish_x = tx;
-				int change_fish_dir = fish_dir[change_fish_y][change_fish_x];
-
-				swap(fish_y, change_fish_y);
-				swap(fish_x, change_fish_x);
-
-				fish_number[fish_y][fish_x] = i;
-				fish_dir[fish_y][fish_x] = dir;
-				fish_pos[i] = { fish_y,fish_x };
-
-				fish_number[change_fish_y][change_fish_x] = change_fish;
-				fish_dir[change_fish_y][change_fish_x] = change_fish_dir;
-				fish_pos[change_fish] = { change_fish_y,change_fish_x };
-				break;
-			}
-			else {
-				chk++;
-				dir += 1;
-				if (dir == 9) dir = 1;
 			}
 		}
-		//cout << "-------------------------------------" << endl;
-		//cout << i << "번째 물고기 swap 후 ";
-		//printFishInfo(fish_dir[fish_y][fish_x]);
-
-		//for (int i = 0; i < 4; i++) {
-		//	for (int j = 0; j < 4; j++) {
-		//		if (i == shark_pos.first&& j == shark_pos.second) {
-		//			cout << -4 << " ";
-		//			continue;
-		//		}
-		//		cout << fish_number[i][j] << " ";
-		//	}
-		//	cout << endl;
-		//}
-		//cout << "-------------------------------------" << endl;
 	}
 }
 
-void eatFish(int fish_y, int fish_x, int* shark_dir, int* shark_eating) {
-	*shark_dir = fish_dir[fish_y][fish_x];
-	*shark_eating = fish_number[fish_y][fish_x];
-	shark_pos = { fish_y,fish_x };
 
-	fish_dir[fish_y][fish_x] = 0;
-	fish_number[fish_y][fish_x] = 0;
-	fish_pos[*shark_eating] = { -1,-1 };
-}
+int sol(int step) {
 
-void moveShark(int shark_y, int shark_x, int shark_dir, int eating,int lv) {
-	//cout << "lv : "<< lv<< " " <<shark_y << " " << shark_x << " " <<shark_dir << " "<< eating << endl;
-	//cout << shark_y << " " << shark_x << endl;
-	//printSharkInfo(lv, shark_dir, eating);
+	move_fishs();
 
-	ans = max(ans, eating);
-	moveFish();
-	vector<pair<int, int>> save_fish_pos(fish_pos);
+	int board_copy[4][4];
+	fish fishs_copy[17];
+	fish shark_copy;
 
-	vector<vector<int>> save_fish_number(fish_number);
-	vector<vector<int>> save_fish_dir(fish_dir);
-	int sz = fish_pos.size();
-	for (int i = 0; i < sz; i++) {
-		save_fish_pos[i] = fish_pos[i];
-	}
-	for (int i = 0; i < 5; i++) {
-		for (int j = 0; j < 5; j++) {
-			save_fish_number[i][j] = fish_number[i][j];
-			save_fish_dir[i][j] = fish_dir[i][j];
+	int dead_score = 0;
+	int max_score = 0;
+
+	for (int j = 0; j < 4; j++) {
+		for (int k = 0; k < 4; k++) {
+			board_copy[j][k] = board[j][k];
 		}
 	}
-	int ty, tx;
-	for (int i = 1; i < 5; i++) {
-		ty = shark_y + dy[shark_dir] * i;
-		tx = shark_x + dx[shark_dir] * i;
-		if (isOkShark(ty, tx)) {
-			int next_shark_dir;
-			int next_shark_eating;
-			eatFish(ty, tx, &next_shark_dir, &next_shark_eating);
-			/*cout << "-------------------------------------" << endl;
-			printSharkInfo(lv, next_shark_dir, next_shark_eating);
+	for (int j = 1; j <= 16; j++) {
+		fishs_copy[j].num = fishs[j].num;
+		fishs_copy[j].y = fishs[j].y;
+		fishs_copy[j].x = fishs[j].x;
+		fishs_copy[j].dir = fishs[j].dir;
+	}
+	shark_copy.num = shark.num;
+	shark_copy.y = shark.y;
+	shark_copy.x = shark.x;
+	shark_copy.dir = shark.dir;
 
-			for (int i = 0; i < 4; i++) {
+	for (int i = 1; i <= 3; i++) {
+		int ny = shark.y + i * dy[shark.dir];
+		int nx = shark.x + i * dx[shark.dir];
+		if (ny >= 0 && ny < 4 && nx >= 0 && nx < 4) {
+			if (fishs[board[ny][nx]].num != -1) {
+				dead_score = fishs[board[ny][nx]].num;
+				shark.y = fishs[board[ny][nx]].y;
+				shark.x = fishs[board[ny][nx]].x;
+				shark.dir = fishs[board[ny][nx]].dir;
+
+				fishs[board[ny][nx]].num = -1;
+				//board[ny][nx] = -1;
+
+				int temp = sol(step + 1);
+				max_score = max(max_score, temp + dead_score);
+
+
+
 				for (int j = 0; j < 4; j++) {
-					if (i == shark_pos.first&& j == shark_pos.second) {
-						cout << -4 << " ";
-						continue;
+					for (int k = 0; k < 4; k++) {
+						board[j][k] = board_copy[j][k];
 					}
-					cout << fish_number[i][j] << " ";
 				}
-				cout << endl;
-			}
-			cout << "-------------------------------------" << endl;*/
-			moveShark(ty, tx, next_shark_dir, eating + next_shark_eating,lv+1);
-			/*fish_pos = save_fish_pos;
-			fish_number = save_fish_number;
-			fish_dir = save_fish_dir;*/
-			for (int i = 0; i < sz; i++) {
-				fish_pos[i] = save_fish_pos[i];
-			}
-			for (int i = 0; i < 5; i++) {
-				for (int j = 0; j < 5; j++) {
-					fish_number[i][j] = save_fish_number[i][j];
-					fish_dir[i][j] = save_fish_dir[i][j];
+				for (int j = 1; j <= 16; j++) {
+					fishs[j].num = fishs_copy[j].num;
+					fishs[j].y = fishs_copy[j].y;
+					fishs[j].x = fishs_copy[j].x;
+					fishs[j].dir = fishs_copy[j].dir;
 				}
+				shark.num = shark_copy.num;
+				shark.y = shark_copy.y;
+				shark.x = shark_copy.x;
+				shark.dir = shark_copy.dir;
 			}
-			shark_pos = { shark_y,shark_x };
 		}
 	}
+
+	return max_score;
 }
 
-
-void Solution() {
-	int shark_dir;
-	int shark_eating;
-	eatFish(0, 0, &shark_dir, &shark_eating);
-	/*fish_dir[0][0] = 0;
-	fish_number[0][0] = 0;
-	fish_pos[shark_eating] = { -1,-1 };*/
-	//shark_pos = { 0,0 };
-	moveShark(0, 0, shark_dir, shark_eating,1);
-}
-
-int main()
-{
+int main() {
 	ios_base::sync_with_stdio(false);
 	cin.tie(NULL);
 	cout.tie(NULL);
 
-	int i, j; //for문 변수 -> longlong필요한지 확인
-	int n = 4;
-	for (int i = 0; i < n; i++) {
-		vector<int> fish_row(5,0);
-		vector<int> dir_row(5,0);
-		for (int j = 0; j < n; j++) {
-			int fish, dir; cin >> fish >> dir;
-			fish_row[j]=fish;
-			dir_row[j]=dir;
-			fish_pos[fish] = { i,j };
+	int num, dir;
+
+	for (int i = 0; i < 4; i++) {
+		for (int j = 0; j < 4; j++) {
+			cin >> num >> dir;
+			fishs[num].set_pos(num, i, j, dir - 1);
+			board[i][j] = num;
+
+			if (i == 0 && j == 0) {
+				shark.set_pos(num, 0, 0, dir - 1);
+				// board[i][j] = -1;
+				fishs[num].num = -1;
+			}
 		}
-		fish_number[i]=fish_row;
-		fish_dir[i]=dir_row;
 	}
-	vector<int> fish_row(5, 0);
-	vector<int> dir_row(5, 0);
-	fish_number[4] = fish_row;
-	fish_dir[4] = dir_row;
-	/*for (int i = 0; i < n; i++) {
-		for (int j = 0; j < n; j++) {
-			cout << fish_number[i][j] << " " ;
-		}
-		cout << endl;
-	}
-	for (int i = 1; i <= 16; i++) {
-		cout << fish_pos[i].first<< " "<<fish_pos[i].second << endl;
-	}*/
-	cout.precision(3);
-	Solution();
-	cout << ans << endl;
+
+	//cout << sol(0) << "bb\n";
+	//cout << shark.num << "aa\n";
+	cout << sol(0) + shark.num << endl;
+
 	return 0;
 }
