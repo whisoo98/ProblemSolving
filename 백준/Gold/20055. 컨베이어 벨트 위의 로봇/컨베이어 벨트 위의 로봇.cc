@@ -1,163 +1,121 @@
 #include <iostream>
-#include <algorithm>
-#include <functional>
-#include <cstdlib>
-#include <cstring>
-#include <cstdio>
-#include <cmath>
-#include <string>
-#include <queue>
-#include <stack>
-#include <map>
 #include <vector>
-#include <set>
-#include <sstream>
-#include <ctime>
-#include <climits>
-#include <tuple>
-#define N 220
-#define ll long long
-#define endl "\n"
-#define MID(a,b) (a+b)/2
+#include <queue>
 
 using namespace std;
 
-int durability[N];
-int inRobots[N];
+int durability[201];
+int visited[201];
 queue<int> robots;
+int head, tail;
 
-int upto;
-int downto;
-int n, k;
-int cnt0;
-int debug0;
-void rotateConveyor() {
-	//cout << "--------before rotate---------" << endl;
-	//for (int i = 0; i < n; i++) {
-	//	cout << durability[i] << " ";
-	//}
-	//cout << endl;
-	//cout << "--------before rotate---------" << endl;
+void move_belt(int N) {
 
-	int temp1, temp2;
-	temp1 = durability[0];
-	for (int i = 1; i < n; i++) {
-		temp2 = durability[i];
-
-		durability[i] = temp1;
-
-		temp1 = temp2;
-
+	head = head - 1;
+	if (head == 0) {
+		head = 2 * N;
 	}
-	durability[0] = temp1;
 
-	//cout << "--------after rotate---------" << endl;
-	//for (int i = 0; i < n; i++) {
-	//	cout << durability[i] << " ";
-	//}
-	//cout << endl;
-	//cout << "--------after rotate---------" << endl;
+	tail = tail - 1;
+	if (tail == 0) {
+		tail = 2 * N;
+	}
+}
 
-	int sz = robots.size();
-	for (int i = 0; i < sz; i++) {
-		int robot = robots.front();
+int move_robots(int N) {
+	int robots_size = robots.size();
 
-		inRobots[robot]--;
+	int cur_pos, next_pos, num_zero = 0;
+
+	for (int i = 0; i < robots_size; i++) {
+		cur_pos = robots.front();
 		robots.pop();
 
-		robot++;
-		robot %= n;
-		if (robot == downto) {
-			continue;
+		next_pos = cur_pos + 1;
+
+		if (next_pos == 2 * N + 1) {
+			next_pos = 1;
 		}
-		robots.push(robot);
-		inRobots[robot]++;
-	}
-}
 
-void moveRobots() {
-	int sz = robots.size();
-	for (int i = 0; i < sz; i++) {
-		int robot = robots.front();
+		if (!visited[next_pos] && durability[next_pos] != 0) {
 
-		robots.pop();
-		inRobots[robot]--;
+			if (next_pos == tail) {
+				visited[cur_pos] = false;
+				durability[next_pos]--;
 
-		if (inRobots[(robot + 1)%n] || !durability[(robot + 1) % n]) {
-			robots.push(robot);
-			inRobots[robot]++;
-			continue;
+				if (durability[next_pos] == 0) {
+					num_zero++;
+				}
+			}
+			else {
+				visited[cur_pos] = false;
+				visited[next_pos] = true;
+				durability[next_pos]--;
+
+				if (durability[next_pos] == 0) {
+					num_zero++;
+				}
+				robots.push(next_pos);
+			}
 		}
-		robot++;
-		robot %= n;
-		durability[robot]--;
-		if (durability[robot] == 0) {
-			cnt0++;
+		else {
+			robots.push(cur_pos);
 		}
-		if (robot == downto) {
-			continue;
-		}
-		robots.push(robot);
-		inRobots[robot]++;
 	}
+
+	return num_zero;
 }
 
-void upRobot() {
-	if (!durability[upto]) return;
-	//if (inRobots[upto]) return;
-	durability[upto]--;
-	if (durability[upto] == 0) {
-		cnt0++;
-	}
-	robots.push(upto);
-	inRobots[upto]++;
-	
-}
 
-int isStop() {
-	/*debug0 = 0;
-	for (int i = 0; i < n; i++) {
-		if (durability[i] == 0) debug0++;
-	}
-	cout << cnt0 << " " << debug0 << endl;*/
-	if (cnt0 >= k) return 1;
-	return 0;
-}
 
-void conveyor() {
-	int steps = 1;
-	int stop = 0;
-	while (1) {
-		rotateConveyor();
-		moveRobots();
-		upRobot();
-		stop = isStop();
-		if (stop) {
-			break;
-		}
-		steps++;
-	}
-	cout << steps << endl;
-}
-
-void Solution() {
-	upto = 0;
-	downto = n-1;
-	n = n * 2;
-	conveyor();
-}
-
-int main()
-{
+int main() {
 	ios_base::sync_with_stdio(false);
 	cin.tie(NULL);
 	cout.tie(NULL);
 
-	int i, j; //for문 변수 -> longlong필요한지 확인
-	cin >> n >> k;
-	for (int i = 0; i < 2*n; i++) {
-		cin>>durability[i];
+	int N, K;
+	cin >> N >> K;
+
+	head = 1, tail = N;
+
+	for (int i = 1; i <= 2 * N; i++) {
+		cin >> durability[i];
 	}
-	Solution();
+
+	int step = 1;
+	int num_zero = 0;
+
+	while (1) {
+		move_belt(N);
+
+		// cout << head << "  " << tail << "\n";
+
+		if (visited[tail]) {
+			visited[tail] = false;
+			robots.pop();
+		}
+
+		num_zero += move_robots(N);
+
+		if (durability[head] != 0 && !visited[head]) {
+			durability[head]--;
+			robots.push(head);
+			visited[head] = true;
+			if (durability[head] == 0) {
+				num_zero++;
+			}
+		}
+
+		if (num_zero >= K) {
+			break;
+		}
+
+		step++;
+
+	}
+
+	cout << step;
+
+
 	return 0;
 }
