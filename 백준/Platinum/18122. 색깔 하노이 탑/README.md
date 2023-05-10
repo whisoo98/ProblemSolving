@@ -4,11 +4,11 @@
 
 ### 성능 요약
 
-메모리: 25420 KB, 시간: 4 ms
+메모리: 25460 KB, 시간: 16 ms
 
 ### 분류
 
-다이나믹 프로그래밍(dp), 수학(math)
+다이나믹 프로그래밍, 수학
 
 ### 문제 설명
 
@@ -21,7 +21,7 @@
 
 <p>이 규칙을 토대로 원판의 색깔이 두 개인 하노이 탑 게임을 만들려고 한다.</p>
 
-<p style="text-align: center;"><img alt="" src="" style="width: 503px; height: 200px;"></p>
+<p style="text-align: center;"><img alt="" src="https://upload.acmicpc.net/d952ce38-90ae-4882-a9b4-5c4b23701599/-/preview/" style="width: 503px; height: 200px;"></p>
 
 <p>처음에는 1번째 기둥에 크기 1인 빨간 원판, 크기 1인 검은 원판, 크기 2인 빨간 원판, 크기 2인 검은 원판, …, 크기 <em>N</em>인 빨간 원판, 크기 <em>N</em>인 검은 원판이 위에서부터 차례대로 놓여 있다.</p>
 

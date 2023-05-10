@@ -15,15 +15,18 @@
 #include <ctime>
 #include <climits>
 #include <tuple>
-#define N 1000000+5
+#define N 1'000'005
 #define ll long long
 #define endl "\n"
 #define MID(a,b) (a+b)/2
-#define MOD 1000000007
+#define MOD 1'000'000'007
+#define R 0
+#define B 1
+#define BB 2
 using namespace std;
-//const long long int MOD = 1000000007;
 
-ll dp[N][3];
+
+ll hanoi[N][3];
 
 int main()
 {
@@ -33,39 +36,24 @@ int main()
 
 	int i, j; //for문 변수 -> longlong필요한지 확인
 	int n; cin >> n;
-	if (n == 1) {
-		cout << 3;
-		return 0;
+	hanoi[1][R] = 1;
+	hanoi[1][B] = 3;
+	hanoi[1][BB] = 2;
+
+	hanoi[2][R] = 5;
+	hanoi[2][B] = 11;
+	hanoi[2][BB] = 6;
+
+	hanoi[3][R] = 13;
+	hanoi[3][B] = 27;
+	hanoi[3][BB] = 14;
+
+
+	for (ll i = 3; i <= n; i++) {
+		hanoi[i][R] = (1 + 2 * hanoi[i - 1][BB]) % MOD;
+		hanoi[i][B] = (1 + 2 * hanoi[i][R]) % MOD;
+		hanoi[i][BB] = (2 * hanoi[i - 1][BB] + 2) % MOD;
 	}
-	else if (n == 2) {
-		cout << 11;
-		return 0;
-	}
-	else {
-		
-
-
-			ll ans = 1;
-			for (i = 1; i <= n + 2; i++) {
-				ans *= 2;
-				ans %= MOD;
-			}
-			cout << (ans%MOD + MOD - 5) % MOD << endl;
-		
-	}
-	/*dp[1][0] = 3;
-	dp[1][1] = 2;
-	dp[1][2];
-	dp[2][0] = 11;
-	dp[2][1] = 6;
-	dp[2][2] = 6;
-	for (i = 3; i <= n; i++) {
-		dp[i][1] = (dp[i - 1][1] * 2 + 2) % MOD;
-		dp[i][0] = (dp[i - 1][0] * 2 + dp[i - 1][1] + 4) % MOD;
-	}
-
-	cout << dp[n][0];*/
-
-
+	cout << hanoi[n][B] << endl;
 	return 0;
 }
