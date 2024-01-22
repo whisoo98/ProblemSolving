@@ -4,7 +4,7 @@
 
 ### 성능 요약
 
-메모리: 2564 KB, 시간: 4 ms
+메모리: 112656 KB, 시간: 180 ms
 
 ### 분류
 
@@ -12,7 +12,7 @@
 
 ### 제출 일자
 
-2024년 1월 23일 08:28:15
+2024년 1월 23일 08:41:41
 
 ### 문제 설명
 
@@ -26,7 +26,7 @@
 
 <p>아래와 같은 그래프가 있을 때,</p>
 
-<p style="text-align: center;"><img alt="" src="" style="height: 526px; width: 600px;"></p>
+<p style="text-align: center;"><img alt="" src="https://upload.acmicpc.net/202a6118-5a5c-462c-bce9-e9303701e63a/-/crop/724x635/187,35/-/preview/" style="height: 526px; width: 600px;"></p>
 
 <p>위의 경우는 최단 경로가 두 가지 있다.<br>
 1→3→4→5→6 또는 1→3→5→6 이다. 이것 중에서 건우가 있는 곳, 즉 4번 정점이 포함된 최단 경로가 있으므로 이 경우에는 민준이가 건우를 도울 수 있다.</p>
